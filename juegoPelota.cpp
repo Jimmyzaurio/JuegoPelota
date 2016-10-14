@@ -11,11 +11,13 @@ Further Modified by Ukranio Coronilla
 */
 
 #include "gfxModified.h"
+#include <iostream>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <vector>
 using namespace std;
@@ -123,9 +125,22 @@ bool tecla[6];
 
 typedef Pelota Agente;
 
-int main() {
+int main(int args, char *argv[]) {
+	srand(time(NULL));
+	int N = atoi(argv[1]);
+	//cout << N << endl << endl;
 	vector<int> color(3, 255);
-	Pelota pelota(ANCHURA/2, 10, 0, 0, 10, color);
+
+	vector<Pelota> balones;
+	for (int i = 0; i < N; ++i) {
+		int xpos  = rand() % ANCHURA/2;
+		int ypos  = rand() % ALTURA/2;
+		int radio = 5 + rand() % 15;
+		//cout << xpos << "   " << ypos << "  " << radio << endl;
+		Pelota p(xpos, ypos, 0, 0, radio, color);
+		balones.push_back(p);
+	}
+
 	color[0] = 87;
 	color[1] = 1;
 	color[2] = 2;
@@ -135,22 +150,27 @@ int main() {
 	gfx_open(ANCHURA, ALTURA, "C++ Juego de pelota");
 
 	while (1) {
-		if(gfx_event_waiting2()) {
+		if (gfx_event_waiting2()) {
 			gfx_keyPress(tecla); //Obtiene la tecla que se ha presionado como siguiente evento
 
 			jugador.mueveAgente(tecla);
 			jugador.validaMovimientoAgente();
 		}
-		pelota.muevePelota(jugador);
+
+		for (int i = 0; i < N; ++i) {
+			//Pelota &pelota = balones[i];		
+			balones[i].muevePelota(jugador);
+		}
 		
-		//Dibuja la pelota
-		gfx_color(pelota.color[0],pelota.color[1],pelota.color[2]);
-		gfx_fill_arc(pelota.x - pelota.r, pelota.y - pelota.r, 2*pelota.r, 2*pelota.r, 0, 360*64);
+		for (int i = 0; i < N; ++i) {
+			//Dibuja la pelota
+			gfx_color(balones[i].color[0], balones[i].color[1], balones[i].color[2]);
+			gfx_fill_arc(balones[i].x - balones[i].r, balones[i].y - balones[i].r, 2*balones[i].r, 2*balones[i].r, 0, 360*64);
 
-		//Dibuja al jugador 
-		gfx_color(jugador.color[0],jugador.color[1],jugador.color[2]);
-		gfx_fill_arc(jugador.x - jugador.r, jugador.y - jugador.r, 2*jugador.r, 2*jugador.r, 0, 180*64);
-
+			//Dibuja al jugador 
+			gfx_color(jugador.color[0],jugador.color[1],jugador.color[2]);
+			gfx_fill_arc(jugador.x - jugador.r, jugador.y - jugador.r, 2*jugador.r, 2*jugador.r, 0, 180*64);
+		}
 		gfx_flush();
 		usleep(18000);
 	}
